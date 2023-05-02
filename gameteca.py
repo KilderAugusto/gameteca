@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect
 
 class Game:
     def __init__(self, nome, categoria, console):
@@ -32,7 +32,7 @@ def criar():
     console = request.form['console']
     games = Game(nome, categoria, console)
     lista_games.append(games)
-    return render_template('lista.html', titulo='Gameteca - Nerdzinhos safados', games=lista_games)
+    return redirect('/') #REDIRECT > REDIRECIONA PARA A ROTA BARRA '/'
 
 
 # trecho da app
