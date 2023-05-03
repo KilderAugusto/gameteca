@@ -35,5 +35,15 @@ def criar():
     return redirect('/') #REDIRECT > REDIRECIONA PARA A ROTA BARRA '/'
 
 
+@app.route('/login')
+def login():
+    return render_template('login.html')
+
+@app.route('/autenticar', methods=['POST',])
+def autenticar():
+    if 'yoda' == request.form['senha']:
+        return redirect('/')
+    else:
+        return redirect('/login')
 # trecho da app
 app.run(debug=True)
