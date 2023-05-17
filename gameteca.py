@@ -24,6 +24,8 @@ def index():
 
 @app.route('/new')
 def new():
+    if 'usuario_logado' not in session or session['usuario_logado'] == None:#validando usuario não logado e redirecionado p/ login, redirecionado logout p/ pag. login
+        return redirect('/login?proxima=new')#?proxima=new query string
     return render_template('new.html', titulo='New Game')
 
 @app.route('/criar', methods=['POST',])
@@ -38,7 +40,8 @@ def criar():
 
 @app.route('/login')
 def login():
-    return render_template('login.html')
+    proxima = request.args.get('proxima')#s recuperamdo informações passadas pela query string
+    return render_template('login.html', proxima=proxima)
 
 @app.route('/autenticar', methods=['POST',])
 def autenticar():
@@ -46,7 +49,8 @@ def autenticar():
         #TODO: session guarda informações nos cookies do navegador
         session['usuario_logado'] = request.form['usuario']
         flash(session['usuario_logado'] + ' logado com sucesso!')
-        return redirect('/')
+        proxima_pag = request.form['proxima']
+        return redirect(f'/{proxima_pag}')
     else:
         flash('Usuário não logado!')
         return redirect('/login')
