@@ -1,64 +1,74 @@
-from flask import Flask, render_template, request, redirect, session, flash
+from flask import Flask, render_template, request, redirect, session, flash, url_for
 
-class Game:
+class Jogo:
     def __init__(self, nome, categoria, console):
         self.nome = nome
         self.categoria = categoria
         self.console = console
 
-#VARIAVEIS GLOBAIS = FATOR GLOBAL
-game1 = Game('Super Mario', 'Aventura', 'Nitendo')
-game2 = Game('Fzero', 'Corrida', 'Nitendo 64')
-game3 = Game('Mortal Kombat', 'Luta', 'Super Nitendo')
-lista_games = [game1, game2, game3]
+jogo1 = Jogo('Tetris', 'Puzzle', 'Atari')
+jogo2 = Jogo('God of War', 'Hack n Slash', 'PS2')
+jogo3 = Jogo('Mortal Kombat', 'Luta', 'PS2')
+lista = [jogo1, jogo2, jogo3]
 
+class Usuario:
+    def __init__(self, nome, nickname, senha):
+        self.nome = nome
+        self.nickname = nickname
+        self.senha = senha
+
+usuario1 = Usuario("Kilder Augusto", "yoda", "kilder")
+usuario2 = Usuario("Fabiane Sousa", "Fabi", "amor")
+usuario3 = Usuario("Joao Vitor", "Jajao", "python_eh_vida")
+
+usuarios = {usuario1.nickname: usuario1,
+            usuario2.nickname: usuario2,
+            usuario3.nickname: usuario3}
 
 app = Flask(__name__)
-app.secret_key = 'cdd' #adicionando chave p/ login
+app.secret_key = 'alura'
 
 @app.route('/')
-
 def index():
+    return render_template('lista.html', titulo='Jogos', jogos=lista)
 
-    return render_template('lista.html', titulo='Gameteca - Nerdzinhos safados', games=lista_games)
-
-@app.route('/new')
-def new():
-    if 'usuario_logado' not in session or session['usuario_logado'] == None:#validando usuario não logado e redirecionado p/ login, redirecionado logout p/ pag. login
-        return redirect('/login?proxima=new')#?proxima=new query string
-    return render_template('new.html', titulo='New Game')
+@app.route('/novo')
+def novo():
+    if 'usuario_logado' not in session or session['usuario_logado'] == None:
+        return redirect(url_for('login', proxima=url_for('novo')))
+    return render_template('novo.html', titulo='Novo Jogo')
 
 @app.route('/criar', methods=['POST',])
 def criar():
     nome = request.form['nome']
     categoria = request.form['categoria']
     console = request.form['console']
-    games = Game(nome, categoria, console)
-    lista_games.append(games)
-    return redirect('/') #REDIRECT > REDIRECIONA PARA A ROTA BARRA '/'
-
+    jogo = Jogo(nome, categoria, console)
+    lista.append(jogo)
+    return redirect(url_for('index'))
 
 @app.route('/login')
 def login():
-    proxima = request.args.get('proxima')#s recuperamdo informações passadas pela query string
+    proxima = request.args.get('proxima')
     return render_template('login.html', proxima=proxima)
 
 @app.route('/autenticar', methods=['POST',])
 def autenticar():
-    if 'vader' == request.form['senha']:
-        #TODO: session guarda informações nos cookies do navegador
-        session['usuario_logado'] = request.form['usuario']
-        flash(session['usuario_logado'] + ' logado com sucesso!')
-        proxima_pag = request.form['proxima']
-        return redirect(f'/{proxima_pag}')
+    if request.form['usuario'] in usuarios:
+        usuario = usuarios[request.form['usuario']]
+        if request.form['senha'] == usuario.senha:
+            session['usuario_logado'] = usuario.nickname
+            flash(usuario.nickname + ' logado com sucesso!')
+            proxima_pagina = request.form['proxima']
+            return redirect(proxima_pagina)
     else:
-        flash('Usuário não logado!')
-        return redirect('/login')
+        flash('Usuário não logado.')
+        return redirect(url_for('login'))
+
 @app.route('/logout')
 def logout():
     session['usuario_logado'] = None
     flash('Logout efetuado com sucesso!')
-    return redirect('/')
-# trecho da app
+    return redirect(url_for('index'))
 
 app.run(debug=True)
